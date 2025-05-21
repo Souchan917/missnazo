@@ -40,6 +40,12 @@ document.addEventListener('DOMContentLoaded', function() {
     notificationContainer.className = 'notification-container';
     document.body.appendChild(notificationContainer);
 
+    // 色詳細ポップアップ用の要素
+    const colorDetailPopup = document.createElement('div');
+    colorDetailPopup.className = 'color-detail-popup';
+    colorDetailPopup.style.display = 'none';
+    document.body.appendChild(colorDetailPopup);
+
     // カラーパターンを管理する変数
     let textColors = [];
     let colorPattern = 'sequential'; // sequential, random, gradient
@@ -88,6 +94,9 @@ document.addEventListener('DOMContentLoaded', function() {
         fontSizeValue.textContent = `${size}px`;
         updateColorfulText();
     });
+
+    // 初期値の設定
+    fontSizeValue.textContent = `${fontSizeInput.value}px`;
 
     // テキスト更新ボタンのイベントリスナー
     updateTextBtn.addEventListener('click', () => {
@@ -251,12 +260,12 @@ document.addEventListener('DOMContentLoaded', function() {
         currentGrayValue = grayValue;
 
         let colorCount = parseInt(colorCountInput.value);
-        if (isNaN(colorCount) || colorCount < 1) colorCount = 1;
+        if (isNaN(colorCount) || colorCount < 1) colorCount = 100; // デフォルト値を100に変更
         if (colorCount > 100) colorCount = 100;
         colorCountInput.value = colorCount;
 
-        // テキスト用に色の数を増やす（最大50色）
-        const textColorCount = Math.min(Math.max(50, colorCount), 100);
+        // テキスト用に色の数を増やす（最大100色）
+        const textColorCount = Math.min(100, colorCount);
 
         // グレースケールプレビューの更新
         const grayColor = `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
@@ -412,7 +421,7 @@ document.addEventListener('DOMContentLoaded', function() {
             textColors = colors;
         } else if (textColors.length === 0) {
             const grayValue = parseInt(grayValueInput.value);
-            const textColorCount = 50;
+            const textColorCount = 100;
             textColors = generateEquivalentColors(grayValue, textColorCount);
         }
         
@@ -472,6 +481,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const color = textColors[colorIndex];
                 const colorString = `rgb(${color.r}, ${color.g}, ${color.b})`;
+                const hexColor = rgbToHex(color.r, color.g, color.b);
                 
                 // 文字のスパン要素を作成
                 const span = document.createElement('span');
@@ -485,7 +495,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 span.style.marginRight = `${letterSpacing}px`;
                 
                 // ホバー時に色の情報を表示するツールチップ
-                span.title = `RGB: ${color.r}, ${color.g}, ${color.b}\nHEX: ${rgbToHex(color.r, color.g, color.b)}`;
+                span.title = `RGB: ${color.r}, ${color.g}, ${color.b}\nHEX: ${hexColor}`;
+                
+                // 色情報表示のためのデータ属性を追加
+                span.dataset.red = color.r;
+                span.dataset.green = color.g;
+                span.dataset.blue = color.b;
+                span.dataset.hex = hexColor;
+                span.dataset.gray = color.actualGray;
+                
+                // ホバーイベントリスナー
+                span.addEventListener('mouseenter', showColorDetail);
+                span.addEventListener('mouseleave', hideColorDetail);
                 
                 textPreview.appendChild(span);
             }
@@ -539,7 +560,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 円を生成
     function generateCircles(colors, count, size) {
         const containerWidth = shapePreviewContainer.offsetWidth - size;
-        const containerHeight = shapePreviewContainer.offsetHeight - size;
+        const containerHeight = Math.min(300, shapePreviewContainer.offsetHeight) - size;
         
         for (let i = 0; i < count; i++) {
             const div = document.createElement('div');
@@ -556,6 +577,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const colorIndex = i % colors.length;
             const color = colors[colorIndex];
             const colorString = `rgb(${color.r}, ${color.g}, ${color.b})`;
+            const hexColor = rgbToHex(color.r, color.g, color.b);
             
             // スタイル設定
             div.style.left = `${left}px`;
@@ -567,6 +589,17 @@ document.addEventListener('DOMContentLoaded', function() {
             // ツールチップに色情報
             div.title = `RGB: ${color.r}, ${color.g}, ${color.b}`;
             
+            // 色情報表示のためのデータ属性を追加
+            div.dataset.red = color.r;
+            div.dataset.green = color.g;
+            div.dataset.blue = color.b;
+            div.dataset.hex = hexColor;
+            div.dataset.gray = color.actualGray;
+            
+            // ホバーイベントリスナー
+            div.addEventListener('mouseenter', showColorDetail);
+            div.addEventListener('mouseleave', hideColorDetail);
+            
             shapePreview.appendChild(div);
         }
     }
@@ -574,7 +607,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 四角形を生成
     function generateSquares(colors, count, size) {
         const containerWidth = shapePreviewContainer.offsetWidth - size;
-        const containerHeight = shapePreviewContainer.offsetHeight - size;
+        const containerHeight = Math.min(300, shapePreviewContainer.offsetHeight) - size;
         
         for (let i = 0; i < count; i++) {
             const div = document.createElement('div');
@@ -591,6 +624,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const colorIndex = i % colors.length;
             const color = colors[colorIndex];
             const colorString = `rgb(${color.r}, ${color.g}, ${color.b})`;
+            const hexColor = rgbToHex(color.r, color.g, color.b);
             
             // 少しランダムに回転
             const rotation = Math.random() * 45 - 22.5;
@@ -606,6 +640,17 @@ document.addEventListener('DOMContentLoaded', function() {
             // ツールチップに色情報
             div.title = `RGB: ${color.r}, ${color.g}, ${color.b}`;
             
+            // 色情報表示のためのデータ属性を追加
+            div.dataset.red = color.r;
+            div.dataset.green = color.g;
+            div.dataset.blue = color.b;
+            div.dataset.hex = hexColor;
+            div.dataset.gray = color.actualGray;
+            
+            // ホバーイベントリスナー
+            div.addEventListener('mouseenter', showColorDetail);
+            div.addEventListener('mouseleave', hideColorDetail);
+            
             shapePreview.appendChild(div);
         }
     }
@@ -613,7 +658,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 三角形を生成
     function generateTriangles(colors, count, size) {
         const containerWidth = shapePreviewContainer.offsetWidth - size;
-        const containerHeight = shapePreviewContainer.offsetHeight - size;
+        const containerHeight = Math.min(300, shapePreviewContainer.offsetHeight) - size;
         
         for (let i = 0; i < count; i++) {
             const div = document.createElement('div');
@@ -630,6 +675,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const colorIndex = i % colors.length;
             const color = colors[colorIndex];
             const colorString = `rgb(${color.r}, ${color.g}, ${color.b})`;
+            const hexColor = rgbToHex(color.r, color.g, color.b);
             
             // ランダムに回転
             const rotation = Math.random() * 360;
@@ -644,6 +690,17 @@ document.addEventListener('DOMContentLoaded', function() {
             // ツールチップに色情報
             div.title = `RGB: ${color.r}, ${color.g}, ${color.b}`;
             
+            // 色情報表示のためのデータ属性を追加
+            div.dataset.red = color.r;
+            div.dataset.green = color.g;
+            div.dataset.blue = color.b;
+            div.dataset.hex = hexColor;
+            div.dataset.gray = color.actualGray;
+            
+            // ホバーイベントリスナー
+            div.addEventListener('mouseenter', showColorDetail);
+            div.addEventListener('mouseleave', hideColorDetail);
+            
             shapePreview.appendChild(div);
         }
     }
@@ -651,7 +708,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ランダムな図形を生成
     function generateRandomShapes(colors, count, size) {
         const containerWidth = shapePreviewContainer.offsetWidth - size;
-        const containerHeight = shapePreviewContainer.offsetHeight - size;
+        const containerHeight = Math.min(300, shapePreviewContainer.offsetHeight) - size;
         
         for (let i = 0; i < count; i++) {
             // ランダムに図形タイプを選択
@@ -672,6 +729,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const colorIndex = Math.floor(Math.random() * colors.length);
             const color = colors[colorIndex];
             const colorString = `rgb(${color.r}, ${color.g}, ${color.b})`;
+            const hexColor = rgbToHex(color.r, color.g, color.b);
             
             // ランダムに回転
             const rotation = Math.random() * 360;
@@ -693,6 +751,17 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // ツールチップに色情報
             div.title = `RGB: ${color.r}, ${color.g}, ${color.b}`;
+            
+            // 色情報表示のためのデータ属性を追加
+            div.dataset.red = color.r;
+            div.dataset.green = color.g;
+            div.dataset.blue = color.b;
+            div.dataset.hex = hexColor;
+            div.dataset.gray = color.actualGray;
+            
+            // ホバーイベントリスナー
+            div.addEventListener('mouseenter', showColorDetail);
+            div.addEventListener('mouseleave', hideColorDetail);
             
             shapePreview.appendChild(div);
         }
@@ -720,17 +789,251 @@ document.addEventListener('DOMContentLoaded', function() {
             const colorIndex = i % colors.length;
             const color = colors[colorIndex];
             const colorString = `rgb(${color.r}, ${color.g}, ${color.b})`;
+            const hexColor = rgbToHex(color.r, color.g, color.b);
             
             item.style.backgroundColor = colorString;
             
             // ツールチップに色情報
             item.title = `RGB: ${color.r}, ${color.g}, ${color.b}`;
             
+            // 色情報表示のためのデータ属性を追加
+            item.dataset.red = color.r;
+            item.dataset.green = color.g;
+            item.dataset.blue = color.b;
+            item.dataset.hex = hexColor;
+            item.dataset.gray = color.actualGray;
+            
+            // ホバーイベントリスナー
+            item.addEventListener('mouseenter', showColorDetail);
+            item.addEventListener('mouseleave', hideColorDetail);
+            
             container.appendChild(item);
         }
         
         shapePreview.appendChild(container);
     }
+
+    // 色詳細を表示する関数
+    function showColorDetail(e) {
+        // 既存のタイムアウトをクリア
+        if (window.hidePopupTimeout) {
+            clearTimeout(window.hidePopupTimeout);
+            window.hidePopupTimeout = null;
+        }
+        
+        const element = e.target;
+        
+        // データ属性から色情報を取得
+        const r = element.dataset.red;
+        const g = element.dataset.green;
+        const b = element.dataset.blue;
+        const hex = element.dataset.hex;
+        const gray = element.dataset.gray;
+        
+        if (!r || !g || !b) return;
+        
+        // サンプルの背景色
+        const colorString = `rgb(${r}, ${g}, ${b})`;
+        
+        // テキスト色（背景が明るいか暗いかに応じて）
+        const textColor = (parseInt(r)*0.299 + parseInt(g)*0.587 + parseInt(b)*0.114) > 128 ? 'black' : 'white';
+        
+        // ポップアップの内容を設定
+        colorDetailPopup.innerHTML = `
+            <div class="popup-color-sample" style="background-color: ${colorString}; color: ${textColor}">
+                カラーサンプル
+            </div>
+            <div class="popup-color-info">
+                <div><span>RGB:</span> <span>${r}, ${g}, ${b}</span></div>
+                <div><span>HEX:</span> <span>${hex}</span></div>
+                <div><span>グレー値:</span> <span>${gray || Math.round(r*0.299 + g*0.587 + b*0.114)}</span></div>
+                <button class="copy-color-btn" data-color="${hex}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <span style="margin-left: 4px;">コピー</span>
+                </button>
+            </div>
+        `;
+        
+        // 現在のホバー要素を記録
+        colorDetailPopup.currentElement = element;
+        
+        // コピーボタンにイベントリスナーを追加
+        const copyBtn = colorDetailPopup.querySelector('.copy-color-btn');
+        copyBtn.addEventListener('click', function() {
+            const colorToCopy = this.dataset.color;
+            navigator.clipboard.writeText(colorToCopy).then(() => {
+                showNotification(`カラーコードをコピーしました: ${colorToCopy}`, 'success', 2000);
+            }).catch(err => {
+                console.error('コピーに失敗しました:', err);
+                showNotification('コピーに失敗しました', 'error');
+            });
+        });
+        
+        // 要素の位置情報を取得
+        const elementRect = element.getBoundingClientRect();
+        
+        // 画面サイズを取得
+        const windowHeight = window.innerHeight;
+        const windowWidth = window.innerWidth;
+        const popupHeight = 140; // ポップアップの推定高さを少し大きめに
+        const popupWidth = 200; // ポップアップの幅を少し大きめに
+        const offset = 20; // カーソルからのオフセットを増やす
+        
+        // マウスの位置を取得
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+        
+        // 要素の中心位置を計算
+        const elementCenterX = elementRect.left + elementRect.width / 2;
+        const elementCenterY = elementRect.top + elementRect.height / 2;
+        
+        // 基本的な位置はマウス位置から算出するが、小さい要素の場合は要素の中心を基準に
+        let left, top;
+        
+        if (elementRect.width < 30 || elementRect.height < 30) {
+            // 小さい要素の場合は要素の右側に表示
+            left = elementRect.right + offset;
+            top = elementCenterY - popupHeight / 2;
+        } else {
+            // 通常は少しマウスポインタから離れた位置に表示
+            left = mouseX + offset;
+            top = mouseY + offset;
+        }
+        
+        // 画面右端を超える場合は左側に表示
+        if (left + popupWidth > windowWidth) {
+            if (elementRect.width < 30) {
+                left = elementRect.left - popupWidth - offset;
+            } else {
+                left = mouseX - popupWidth - offset;
+            }
+        }
+        
+        // 画面下部を超える場合は上に表示
+        if (top + popupHeight > windowHeight) {
+            if (elementRect.height < 30) {
+                top = elementCenterY - popupHeight / 2;
+            } else {
+                top = mouseY - popupHeight - offset;
+            }
+        }
+        
+        // 位置が画面外にならないように調整
+        left = Math.max(10, Math.min(windowWidth - popupWidth - 10, left));
+        top = Math.max(10, Math.min(windowHeight - popupHeight - 10, top));
+        
+        // ポップアップの位置を設定
+        colorDetailPopup.style.left = `${left}px`;
+        colorDetailPopup.style.top = `${top}px`;
+        colorDetailPopup.style.display = 'block';
+        
+        // 表示したポップアップを記録
+        window.currentPopupElement = element;
+    }
+    
+    // 色詳細を非表示にする関数
+    function hideColorDetail(e) {
+        // すぐには非表示にせず、若干の遅延を設ける
+        window.hidePopupTimeout = setTimeout(() => {
+            // ポップアップ自体にマウスが乗っていなければ非表示に
+            if (!colorDetailPopup.matches(':hover')) {
+                // マウスが別の色要素に移っているかチェック
+                let mouseIsOverColorElement = false;
+                
+                // 現在マウスが乗っている要素を取得し、その要素とその親要素をすべてチェック
+                let currentElement = document.elementFromPoint(
+                    window.lastMouseX || 0, 
+                    window.lastMouseY || 0
+                );
+                
+                // 現在の要素から親をたどって色要素を探す
+                while (currentElement) {
+                    if (currentElement.dataset && currentElement.dataset.red) {
+                        mouseIsOverColorElement = true;
+                        break;
+                    }
+                    currentElement = currentElement.parentElement;
+                }
+                
+                // 色要素上にマウスがなければポップアップを非表示
+                if (!mouseIsOverColorElement) {
+                    colorDetailPopup.style.display = 'none';
+                    window.currentPopupElement = null;
+                }
+            }
+        }, 300); // 遅延時間を少し長めに設定
+    }
+    
+    // マウス移動のグローバルイベントリスナー
+    document.addEventListener('mousemove', function(e) {
+        // 現在のマウス位置を記録
+        window.lastMouseX = e.clientX;
+        window.lastMouseY = e.clientY;
+        
+        // ポップアップが表示中で、遠く離れた場合のみ非表示に
+        if (colorDetailPopup.style.display === 'block' && 
+            !colorDetailPopup.matches(':hover')) {
+            
+            // 現在の要素上にマウスがあるか確認
+            let mouseIsOverCurrentElement = false;
+            if (window.currentPopupElement) {
+                const rect = window.currentPopupElement.getBoundingClientRect();
+                if (
+                    e.clientX >= rect.left && e.clientX <= rect.right &&
+                    e.clientY >= rect.top && e.clientY <= rect.bottom
+                ) {
+                    mouseIsOverCurrentElement = true;
+                }
+            }
+            
+            // 現在の要素上になく、ポップアップからも離れている場合
+            if (!mouseIsOverCurrentElement) {
+                // ポップアップからの距離を計算
+                const popupRect = colorDetailPopup.getBoundingClientRect();
+                
+                // ポップアップから遠く離れた場合のみ非表示に
+                const distance = Math.sqrt(
+                    Math.pow(e.clientX - (popupRect.left + popupRect.width/2), 2) + 
+                    Math.pow(e.clientY - (popupRect.top + popupRect.height/2), 2)
+                );
+                
+                if (distance > 200) { // 距離の閾値を増やす
+                    colorDetailPopup.style.display = 'none';
+                    window.currentPopupElement = null;
+                }
+            }
+        }
+    });
+    
+    // ポップアップ自体のホバーが終わったときにも非表示に
+    colorDetailPopup.addEventListener('mouseleave', function(e) {
+        // 移動先の要素を取得
+        const toElement = e.relatedTarget;
+        
+        // 移動先または現在の要素が色要素かチェック
+        let isColorElement = false;
+        let currentElement = toElement;
+        
+        // 親要素をたどる
+        while (currentElement) {
+            if (currentElement.dataset && currentElement.dataset.red) {
+                isColorElement = true;
+                break;
+            }
+            currentElement = currentElement.parentElement;
+        }
+        
+        // 別の色要素に移動するのでなければ非表示
+        if (!isColorElement) {
+            setTimeout(() => {
+                this.style.display = 'none';
+                window.currentPopupElement = null;
+            }, 200);
+        }
+    });
 
     // 初期化
     initColorPicker();

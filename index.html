@@ -13,37 +13,37 @@
     </header>
 
     <main>
-        <div class="controls">
-            <div class="input-group">
-                <label for="gray-value">グレー値 (0-255):</label>
-                <input type="number" id="gray-value" min="0" max="255" value="128">
-                <button id="generate-btn">色を生成</button>
-            </div>
-            
-            
-            <div class="input-group">
-                <label for="background-color">背景色:</label>
-                <div class="color-input-wrapper">
-                    <input type="color" id="background-color" value="#808080">
-                    <span id="background-hex">#808080</span>
+        <div class="top-section">
+            <div class="controls-container">
+                <div class="controls">
+                    <div class="input-group">
+                        <label for="gray-value">グレー値:</label>
+                        <input type="number" id="gray-value" min="0" max="255" value="128">
+                        <button id="generate-btn">生成</button>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="background-color">背景色:</label>
+                        <div class="color-input-wrapper">
+                            <input type="color" id="background-color" value="#808080">
+                            <span id="background-hex">#808080</span>
+                        </div>
+                        <button id="apply-background-btn">適用</button>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="color-count">色数:</label>
+                        <input type="number" id="color-count" min="1" max="100" value="100">
+                    </div>
+                    
+                    <div class="input-group">
+                        <button id="preset-light">明るい(192)</button>
+                        <button id="preset-mid">中間(128)</button>
+                        <button id="preset-dark">暗い(64)</button>
+                    </div>
                 </div>
-                <button id="apply-background-btn">背景色を適用</button>
             </div>
             
-            <div class="input-group">
-                <label for="color-count">表示する色の数:</label>
-                <input type="number" id="color-count" min="1" max="100" value="20">
-            </div>
-            
-            <div class="input-group">
-                <label>プリセット:</label>
-                <button id="preset-light">明るい色 (192)</button>
-                <button id="preset-mid">中間色 (128)</button>
-                <button id="preset-dark">暗い色 (64)</button>
-            </div>
-        </div>
-
-        <div class="preview-section">
             <div class="grayscale-preview">
                 <h2>グレースケール値</h2>
                 <div id="gray-preview" class="color-box"></div>
@@ -51,57 +51,60 @@
             </div>
         </div>
 
-        <div class="text-display-section">
-            <h2>カラフルテキスト表示</h2>
-            <div class="text-controls">
-                <div class="input-group">
-                    <label for="display-text">表示テキスト:</label>
-                    <textarea id="display-text" rows="5" placeholder="ここにテキストを入力">グレースケールで同じ値になる色でテキストを表示できます。
+        <div class="preview-section">
+            <div class="text-display-section">
+                <h2>カラフルテキスト表示</h2>
+                <div class="text-controls">
+                    <div class="input-group">
+                        <label for="font-size">サイズ:</label>
+                        <input type="range" id="font-size" min="12" max="72" value="24">
+                        <span id="font-size-value">24px</span>
+                        <button id="update-text-btn">更新</button>
+                    </div>
+                    <textarea id="display-text" rows="4" placeholder="ここにテキストを入力">グレースケールで同じ値になる色でテキストを表示できます。
 印刷すると全て同じ色に見えます。
-カラフルに見える文字も白黒印刷すると同じ濃さになります。
-このように複数行のテキストも表示できます。
-文字は一つ一つ違う色ですが、グレースケール値は全て同じです！</textarea>
+カラフルに見える文字も白黒印刷すると同じ濃さになります。</textarea>
                 </div>
-                <div class="input-group">
-                    <label for="font-size">フォントサイズ:</label>
-                    <input type="range" id="font-size" min="12" max="72" value="28">
-                    <span id="font-size-value">28px</span>
+                <div id="text-preview-container" class="text-preview-container">
+                    <div id="text-preview" class="text-preview"></div>
                 </div>
-                <button id="update-text-btn">テキスト更新</button>
             </div>
-            <div id="text-preview-container" class="text-preview-container">
-                <div id="text-preview" class="text-preview"></div>
-            </div>
-        </div>
 
-        <div class="shape-display-section">
-            <h2>カラフル図形表示</h2>
-            <div class="shape-controls">
-                <div class="input-group">
-                    <label for="shape-type">図形タイプ:</label>
-                    <select id="shape-type">
-                        <option value="circles">円</option>
-                        <option value="squares">四角形</option>
-                        <option value="triangles">三角形</option>
-                        <option value="random">ランダム</option>
-                        <option value="pattern">パターン</option>
-                    </select>
+            <div class="shape-display-section">
+                <h2>カラフル図形表示</h2>
+                <div class="shape-controls">
+                    <div class="shape-controls-row">
+                        <div class="input-group">
+                            <label for="shape-type">図形:</label>
+                            <select id="shape-type">
+                                <option value="circles">円</option>
+                                <option value="squares">四角形</option>
+                                <option value="triangles">三角形</option>
+                                <option value="random">ランダム</option>
+                                <option value="pattern">パターン</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="shape-count">数:</label>
+                            <input type="range" id="shape-count" min="5" max="100" value="30">
+                            <span id="shape-count-value">30個</span>
+                        </div>
+                    </div>
+                    <div class="shape-controls-row">
+                        <div class="input-group">
+                            <label for="shape-size">サイズ:</label>
+                            <input type="range" id="shape-size" min="10" max="100" value="40">
+                            <span id="shape-size-value">40px</span>
+                        </div>
+                        <div class="button-group">
+                            <button id="generate-shapes-btn">図形生成</button>
+                            <button id="random-shapes-btn">ランダム</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label for="shape-count">図形の数:</label>
-                    <input type="range" id="shape-count" min="5" max="100" value="30">
-                    <span id="shape-count-value">30個</span>
+                <div id="shape-preview-container" class="shape-preview-container">
+                    <div id="shape-preview" class="shape-preview"></div>
                 </div>
-                <div class="input-group">
-                    <label for="shape-size">図形のサイズ:</label>
-                    <input type="range" id="shape-size" min="10" max="100" value="40">
-                    <span id="shape-size-value">40px</span>
-                </div>
-                <button id="generate-shapes-btn">図形生成</button>
-                <button id="random-shapes-btn">ランダム図形</button>
-            </div>
-            <div id="shape-preview-container" class="shape-preview-container">
-                <div id="shape-preview" class="shape-preview"></div>
             </div>
         </div>
 
@@ -112,9 +115,7 @@
         
         <div class="explanation">
             <h2>グレースケール変換について</h2>
-            <p>カラー画像をグレースケール（白黒）に変換する際、RGBの値は次の計算式で変換されます：</p>
-            <code>Gray = 0.299 × R + 0.587 × G + 0.114 × B</code>
-            <p>このツールでは、指定したグレー値になるRGB組み合わせを表示します。</p>
+            <p>カラー画像をグレースケール（白黒）に変換する際、RGBの値は次の計算式で変換されます：<code>Gray = 0.299 × R + 0.587 × G + 0.114 × B</code> このツールでは、指定したグレー値になるRGB組み合わせを表示します。</p>
         </div>
     </main>
 
