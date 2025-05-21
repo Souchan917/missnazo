@@ -67,7 +67,19 @@ document.addEventListener('DOMContentLoaded', function() {
     generateBtn.addEventListener('click', generateColors);
 
     // 背景色の選択に関するイベントリスナー
-    backgroundColorInput.addEventListener('input', updateBackgroundHexDisplay);
+    backgroundColorInput.addEventListener('input', () => {
+        updateBackgroundHexDisplay();
+        
+        // 背景色のグレー値を計算し自動更新
+        const color = backgroundColorInput.value;
+        const rgbColor = hexToRgb(color);
+        if (rgbColor) {
+            const grayValue = calculateGrayValue(rgbColor.r, rgbColor.g, rgbColor.b);
+            grayValueInput.value = Math.round(grayValue);
+            // 更新された値でカラーを生成
+            generateColors(true);
+        }
+    });
     applyBackgroundBtn.addEventListener('click', applyBackgroundColor);
 
     // フォントサイズ変更のイベントリスナー
@@ -207,42 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
         textPreviewContainer.style.backgroundColor = color;
         shapePreviewContainer.style.backgroundColor = color;
         
-        // 選択した背景色のグレースケール値を計算して表示
-        const rgbColor = hexToRgb(color);
-        if (rgbColor) {
-            const grayValue = calculateGrayValue(rgbColor.r, rgbColor.g, rgbColor.b);
-            
-            // 情報通知を表示
-            showNotification(`選択した背景色 ${color} のグレースケール値は ${grayValue} です。\n現在のテキストのグレースケール値は ${grayValueInput.value} です。`);
-            
-            // 背景色情報を表示エリアに追加
-            const infoText = document.createElement('p');
-            infoText.className = 'background-info';
-            infoText.innerHTML = `背景色: ${color} <br>グレースケール値: ${grayValue}`;
-            
-            // 同じグレースケール値に設定するリンク
-            const setGrayLink = document.createElement('a');
-            setGrayLink.href = '#';
-            setGrayLink.className = 'action-link';
-            setGrayLink.textContent = '背景色と同じグレースケール値を使用';
-            setGrayLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                grayValueInput.value = Math.round(grayValue);
-                generateColors();
-                showNotification('グレースケール値を背景色に合わせて更新しました', 'success');
-            });
-            
-            // 前の情報があれば削除
-            const oldInfo = document.querySelector('.background-info');
-            if (oldInfo) {
-                oldInfo.remove();
-            }
-            
-            // 情報を表示エリアに追加
-            const infoContainer = document.querySelector('.grayscale-preview');
-            infoContainer.appendChild(infoText);
-            infoContainer.appendChild(setGrayLink);
-        }
+        showNotification('プレビュー背景色を更新しました', 'success');
     }
 
     // 16進数カラーコードをRGBに変換
@@ -265,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // グレースケール値からカラーを生成する関数
-    function generateColors() {
+    function generateColors(skipNotification = false) {
         // 入力値の取得と検証
         let grayValue = parseInt(grayValueInput.value);
         if (isNaN(grayValue) || grayValue < 0) grayValue = 0;
@@ -291,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function() {
         displayColors(colors);
         
         // テキスト表示用にたくさんの色を生成
-        const textColors = generateEquivalentColors(grayValue, textColorCount);
+        const textColorsList = generateEquivalentColors(grayValue, textColorCount);
         
         // 背景色更新のリンクを表示
         const updateBgLink = document.createElement('a');
@@ -319,11 +296,16 @@ document.addEventListener('DOMContentLoaded', function() {
         infoContainer.appendChild(updateBgLink);
         
         // カラフルテキストを更新
-        updateColorfulText(textColors);
+        updateColorfulText(textColorsList);
         
         // 現在の図形を再生成
         if (shapePreview.children.length > 0) {
             generateShapes(shapeTypeSelect.value);
+        }
+        
+        // 自動更新時は通知しない
+        if (!skipNotification) {
+            showNotification(`グレー値 ${grayValue} の同等色を生成しました`, 'success');
         }
     }
 
