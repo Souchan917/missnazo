@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const backgroundHexDisplay = document.getElementById('background-hex');
     const applyBackgroundBtn = document.getElementById('apply-background-btn');
 
+    
     // テキスト表示用の要素
     const displayTextInput = document.getElementById('display-text');
     const fontSizeInput = document.getElementById('font-size');
