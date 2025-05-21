@@ -34,6 +34,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const shapePreview = document.getElementById('shape-preview');
     const shapePreviewContainer = document.getElementById('shape-preview-container');
 
+    // 通知表示用の要素
+    const notificationContainer = document.createElement('div');
+    notificationContainer.className = 'notification-container';
+    document.body.appendChild(notificationContainer);
+
     // カラーパターンを管理する変数
     let textColors = [];
     let colorPattern = 'sequential'; // sequential, random, gradient
@@ -109,6 +114,79 @@ document.addEventListener('DOMContentLoaded', function() {
     generateColors();
     updateBackgroundHexDisplay();
 
+    // 通知を表示する関数
+    function showNotification(message, type = 'info', duration = 3000) {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        
+        // 閉じるボタン
+        const closeBtn = document.createElement('span');
+        closeBtn.className = 'notification-close';
+        closeBtn.innerHTML = '&times;';
+        closeBtn.addEventListener('click', () => {
+            notification.remove();
+        });
+        
+        notification.appendChild(closeBtn);
+        notificationContainer.appendChild(notification);
+        
+        // 一定時間後に自動で消える
+        setTimeout(() => {
+            notification.classList.add('fade-out');
+            setTimeout(() => {
+                notification.remove();
+            }, 500);
+        }, duration);
+        
+        return notification;
+    }
+    
+    // 確認ダイアログを表示する関数
+    function showConfirmation(message, callback) {
+        const confirmBox = document.createElement('div');
+        confirmBox.className = 'confirmation-box';
+        
+        const messageEl = document.createElement('p');
+        messageEl.textContent = message;
+        
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'confirmation-buttons';
+        
+        const yesBtn = document.createElement('button');
+        yesBtn.textContent = 'はい';
+        yesBtn.addEventListener('click', () => {
+            confirmBox.remove();
+            callback(true);
+        });
+        
+        const noBtn = document.createElement('button');
+        noBtn.textContent = 'いいえ';
+        noBtn.addEventListener('click', () => {
+            confirmBox.remove();
+            callback(false);
+        });
+        
+        buttonContainer.appendChild(yesBtn);
+        buttonContainer.appendChild(noBtn);
+        
+        confirmBox.appendChild(messageEl);
+        confirmBox.appendChild(buttonContainer);
+        
+        // 画面に表示
+        document.body.appendChild(confirmBox);
+        
+        // ESCキーでキャンセル
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                confirmBox.remove();
+                callback(false);
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+    }
+
     // 初期のカラーピッカー値をグレー値から設定
     function initColorPicker() {
         const grayValue = parseInt(grayValueInput.value);
@@ -133,14 +211,36 @@ document.addEventListener('DOMContentLoaded', function() {
         if (rgbColor) {
             const grayValue = calculateGrayValue(rgbColor.r, rgbColor.g, rgbColor.b);
             
-            // ユーザーに情報表示
-            alert(`選択した背景色 ${color} のグレースケール値は ${grayValue} です。\n\n現在のテキストのグレースケール値は ${grayValueInput.value} です。`);
+            // 情報通知を表示
+            showNotification(`選択した背景色 ${color} のグレースケール値は ${grayValue} です。\n現在のテキストのグレースケール値は ${grayValueInput.value} です。`);
             
-            // 背景色と同じグレースケール値に設定する選択肢
-            if (confirm('背景色と同じグレースケール値に設定しますか？')) {
+            // 背景色情報を表示エリアに追加
+            const infoText = document.createElement('p');
+            infoText.className = 'background-info';
+            infoText.innerHTML = `背景色: ${color} <br>グレースケール値: ${grayValue}`;
+            
+            // 同じグレースケール値に設定するリンク
+            const setGrayLink = document.createElement('a');
+            setGrayLink.href = '#';
+            setGrayLink.className = 'action-link';
+            setGrayLink.textContent = '背景色と同じグレースケール値を使用';
+            setGrayLink.addEventListener('click', (e) => {
+                e.preventDefault();
                 grayValueInput.value = Math.round(grayValue);
                 generateColors();
+                showNotification('グレースケール値を背景色に合わせて更新しました', 'success');
+            });
+            
+            // 前の情報があれば削除
+            const oldInfo = document.querySelector('.background-info');
+            if (oldInfo) {
+                oldInfo.remove();
             }
+            
+            // 情報を表示エリアに追加
+            const infoContainer = document.querySelector('.grayscale-preview');
+            infoContainer.appendChild(infoText);
+            infoContainer.appendChild(setGrayLink);
         }
     }
 
@@ -192,13 +292,30 @@ document.addEventListener('DOMContentLoaded', function() {
         // テキスト表示用にたくさんの色を生成
         const textColors = generateEquivalentColors(grayValue, textColorCount);
         
-        // 背景色をグレースケール値に合わせて更新するか確認
-        if (confirm('テキストと図形プレビューの背景色もグレースケール値に合わせて更新しますか？')) {
+        // 背景色更新のリンクを表示
+        const updateBgLink = document.createElement('a');
+        updateBgLink.href = '#';
+        updateBgLink.className = 'action-link';
+        updateBgLink.textContent = 'プレビュー背景色を更新';
+        updateBgLink.addEventListener('click', (e) => {
+            e.preventDefault();
             textPreviewContainer.style.backgroundColor = grayColor;
             shapePreviewContainer.style.backgroundColor = grayColor;
             backgroundColorInput.value = rgbToHex(grayValue, grayValue, grayValue);
             updateBackgroundHexDisplay();
+            showNotification('背景色をグレースケール値に合わせて更新しました', 'success');
+        });
+        
+        // 前のリンクがあれば削除
+        const oldLink = document.querySelector('.update-bg-link');
+        if (oldLink) {
+            oldLink.remove();
         }
+        
+        // リンクを追加
+        updateBgLink.classList.add('update-bg-link');
+        const infoContainer = document.querySelector('.grayscale-preview');
+        infoContainer.appendChild(updateBgLink);
         
         // カラフルテキストを更新
         updateColorfulText(textColors);
@@ -294,9 +411,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // クリックでコピー機能
             colorItem.addEventListener('click', function() {
                 navigator.clipboard.writeText(hexString).then(() => {
-                    alert(`カラーコードをコピーしました: ${hexString}`);
+                    showNotification(`カラーコードをコピーしました: ${hexString}`, 'success', 2000);
                 }).catch(err => {
                     console.error('コピーに失敗しました:', err);
+                    showNotification('コピーに失敗しました', 'error');
                 });
             });
             
